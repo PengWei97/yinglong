@@ -3,7 +3,6 @@
 #pragma once
 
 #include "GrainTracker.h"
-#include "MisorientationAngleCalculator.h"
 
 class GrainTrackerNew : public GrainTracker
 {
