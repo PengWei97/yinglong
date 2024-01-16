@@ -16,7 +16,6 @@ GrainTrackerNew::GrainTrackerNew(const InputParameters & parameters) : GrainTrac
 void
 GrainTrackerNew::createAdjacentIDVector()
 {
-
   for (const auto grain_num_i : index_range(_feature_sets))
   {
     auto & grain_i = _feature_sets[grain_num_i];

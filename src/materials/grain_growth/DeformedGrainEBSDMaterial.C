@@ -25,7 +25,6 @@ DeformedGrainEBSDMaterial::validParams()
   params.addParam<Real>("stored_factor", 0.5, "the scaling factor in stored energy function");
   params.addParam<bool>(
       "concurrent_recovery", false, "The concurrent recovery would be considered if true");
-
   params.addParam<Real>(
       "rho_end_l2",
       2.10e12,
@@ -110,8 +109,8 @@ DeformedGrainEBSDMaterial::getGNDsFromEBSD(const unsigned int & grain_id)
 {
   const auto & time_current = _fe_problem.time(); // current simulation time s
 
-  Real rho_init =
-      2.0e15 * (_length_scale * _length_scale); // TODO - need to be more physically based
+  // TODO - need to be more physically based
+  Real rho_init = 2.0e15 * (_length_scale * _length_scale);
 
   if (grain_id < _GNDs_provider.getGrainNum())
     rho_init = _GNDs_provider.getAvgData(grain_id)._custom[0] *
