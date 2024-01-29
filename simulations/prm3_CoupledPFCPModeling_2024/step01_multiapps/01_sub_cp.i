@@ -5,10 +5,31 @@
 [Mesh]
   type = GeneratedMesh
   dim = 2
+  nx = 10
+  ny = 10
+  xmax = 1000
+  ymax = 1000
   elem_type = QUAD4
+  uniform_refine = 2
 []
 
 [AuxVariables]
+  [./euler_angle_1]
+    order = CONSTANT
+    family = MONOMIAL
+  [../]
+  [./euler_angle_2]
+    order = CONSTANT
+    family = MONOMIAL
+  [../]
+  [./euler_angle_3]
+    order = CONSTANT
+    family = MONOMIAL
+  [../]
+  [./elastic_energy]
+    order = CONSTANT
+    family = MONOMIAL
+  [../]
   [./pk2]
     order = CONSTANT
     family = MONOMIAL
@@ -33,6 +54,10 @@
    order = CONSTANT
    family = MONOMIAL
   [../]
+  [./C1111]
+   order = CONSTANT
+   family = MONOMIAL
+  [../]
 []
 
 [Modules/TensorMechanics/Master/all]
@@ -42,6 +67,11 @@
 []
 
 [AuxKernels]
+  [./elastic_energy]
+    type = ElasticDeformationEnergyAux # ElasticEnergyAux
+    variable = elastic_energy
+    execute_on = timestep_end
+  [../]
   [./fp_yy]
     type = RankTwoAux
     variable = fp_yy
@@ -80,6 +110,16 @@
    index = 0
    execute_on = timestep_end
   [../]
+  [./C1111]
+    type = RankFourAux
+    variable = C1111
+    rank_four_tensor = elasticity_tensor
+    index_l = 0
+    index_j = 0
+    index_k = 0
+    index_i = 0
+    execute_on = timestep_end
+  [../]
 []
 
 [BCs]
@@ -105,9 +145,13 @@
 
 [Materials]
   [./elasticity_tensor]
-    type = ComputeElasticityTensorCP
+    type = ComputeElasticityTensorCPCoupled
     C_ijkl = '1.684e5 1.214e5 1.214e5 1.684e5 1.214e5 1.684e5 0.754e5 0.754e5 0.754e5'
     fill_method = symmetric9
+
+    euler_angles_pf_1 = euler_angle_1
+    euler_angles_pf_2 = euler_angle_2
+    euler_angles_pf_3 = euler_angle_3
   [../]
   [./stress]
     type = ComputeMultipleCrystalPlasticityStress

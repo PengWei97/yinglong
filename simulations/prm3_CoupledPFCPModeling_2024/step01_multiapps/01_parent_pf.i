@@ -1,8 +1,78 @@
+################################################
+########## Ref #################################
+################################################
+# 1. bicrystal.i
+# 2. exception.i
+
+
+# 1. 在同一个网格下面，运行
+# 2. 采用同一套表征微结构的参数
+# 3. main-pf 可以调用 sub-cp 模型
+
+# name = 'step01_multiApp'
+
+################################################
+########## MultiApp Factory ####################
+################################################
+
+################################################
+########## MESH ################################
+################################################
+
+i_mesh_x = 25
+i_mesh_y = 10
+cp_clone_mesh = false
+
+#################################################
+########## Material / Model Parameters ##########
+#################################################
+
+################################################
+########## Solver ##############################
+################################################
+
+################################################
+########## MESH ################################
+################################################
+
+[MultiApps]
+  [sub_cp]
+    type = TransientMultiApp # FullSolveMultiApp
+    # app_type = TensorMechanicsApp
+
+    clone_parent_mesh = ${cp_clone_mesh}
+    positions = '0 0 0'
+    input_files = '01_sub_cp.i'
+  []
+[]
+
+[Transfers]
+  # [push_u]
+  #   type = MultiAppCopyTransfer
+  #   source_variable = euler_angle_1
+  #   variable = euler_angle_1
+  #   to_multi_app = sub_cp
+  # []
+
+  [push_eulers]
+    type = MultiAppGeneralFieldShapeEvaluationTransfer
+    to_multi_app = sub_cp
+    source_variable = 'euler_angle_1 euler_angle_2 euler_angle_3'
+    variable = 'euler_angle_1 euler_angle_2 euler_angle_3'
+  []
+  # [pull_elastic_energy]
+  #   type = MultiAppGeneralFieldShapeEvaluationTransfer
+  #   from_multi_app = micro
+  #   variable = vt
+  #   postprocessor = average_v
+  # []
+[]
+
 [Mesh]
   type = GeneratedMesh
   dim = 2
-  nx = 10
-  ny = 3
+  nx = ${i_mesh_x}
+  ny = ${i_mesh_y}
   xmax = 1000
   ymax = 1000
   elem_type = QUAD4
@@ -47,7 +117,19 @@
     order = CONSTANT
     family = MONOMIAL
   [../]
-  [./euler_angle]
+  [euler_angles]
+    order = FIRST
+    family = LAGRANGE_VEC
+  []
+  [./euler_angle_1]
+    order = CONSTANT
+    family = MONOMIAL
+  [../]
+  [./euler_angle_2]
+    order = CONSTANT
+    family = MONOMIAL
+  [../]
+  [./euler_angle_3]
     order = CONSTANT
     family = MONOMIAL
   [../]
@@ -85,12 +167,32 @@
     execute_on = 'initial timestep_begin'
     flood_counter = grain_tracker
   [../]
-  [./euler_angle]
+  [euler_angles]
+    type = OutputEulerAnglesVector
+    variable = euler_angles
+    euler_angle_provider = euler_angle_file
+    grain_tracker = grain_tracker
+  []
+  [./euler_angle_1]
     type = OutputEulerAngles
-    variable = euler_angle
+    variable = euler_angle_1
     euler_angle_provider = euler_angle_file
     grain_tracker = grain_tracker
     output_euler_angle = 'phi1'
+  [../]
+  [./euler_angle_2]
+    type = OutputEulerAngles
+    variable = euler_angle_2
+    euler_angle_provider = euler_angle_file
+    grain_tracker = grain_tracker
+    output_euler_angle = 'Phi'
+  [../]
+  [./euler_angle_3]
+    type = OutputEulerAngles
+    variable = euler_angle_3
+    euler_angle_provider = euler_angle_file
+    grain_tracker = grain_tracker
+    output_euler_angle = 'phi2'
   [../]
 []
 
@@ -157,15 +259,15 @@
   nl_rel_tol = 1e-9
 
   start_time = 0.0
-  num_steps = 3
-  dt = 0.2
+  num_steps = 5
+  dt = 0.05
 
-  [./Adaptivity]
-   initial_adaptivity = 2
-    refine_fraction = 0.7
-    coarsen_fraction = 0.1
-    max_h_level = 2
-  [../]
+  # [./Adaptivity]
+  #  initial_adaptivity = 2
+  #   refine_fraction = 0.7
+  #   coarsen_fraction = 0.1
+  #   max_h_level = 2
+  # [../]
 []
 
 [Outputs]
